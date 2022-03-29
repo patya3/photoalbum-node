@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'js/lc_lightbox.lite.min.js' %}"></script>
+    <script src="{% static 'js/el-pagination.js' %}"></script>
+    <script src="{% static 'js/browse-images.js' %}"></script>
+    <script>$.endlessPaginate({paginateOnScroll: true});</script>
+{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static 'css/lc_lightbox.min.css' %}">
+{% endblock %}
+{% block content %}
+<!-- Breadcrumb -->
+<section id="bc" class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'index' %}">
+                        <i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="breadcrumb-item active"> 
+                    <a href="{% url 'leaderboard' %}"> Leaderboard</a>
+                </li>
+                <li class="breadcrumb-item active"> {{ user.username }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+<section id="userdata">
+  <div class="container">
+    <a href="{% url 'leaderboard' %}" class="btn btn-light mb-4">Back To Leaderboard</a>
+    <div class="row">
+      <div class="col-md-3">
+        <div class="card mb-3">
+          <img class="card-img-top" src="/media/{{ images.0.photo }}" alt="Last uploaded image">
+          <div class="card-body">
+            <h5 class="card-title">{{ user.username }}</h5>
+            <h6 class="text-secondary">{{ user.first_name }} {{ user.last_name }}</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <!-- Fields -->
+        <div class="row mb-5 fields">
+          <div class="col-md-6">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-money-bill-alt"></i> Username: 
+                <span class="float-right">{{ user.username }}</span>
+              </li>
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-bed"></i> First Name:
+                <span class="float-right">{{ user.first_name }}</span>
+              </li>
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-bath"></i> Last Name:
+                <span class="float-right">{{ user.last_name }}</span>
+              </li>
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-car"></i> Email:
+                <span class="float-right"><a href="mailto:{{ user.email }}">{{ user.email }}</a></span>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-square"></i> Join Date:
+                <span class="float-right">{{ user.date_joined|date:"M d, Y" }}</span>
+              </li>
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-th-large"></i> Location:
+                <span class="float-right">{{ user.location__country__name }} | {{ user.location__name }}</span>
+              </li>
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-calendar"></i> Uploaded Images:
+                <span class="float-right">{{ user.image_count }}</span>
+              </li>
+              <li class="list-group-item text-secondary">
+                <i class="fas fa-bed"></i> Ranking:
+                <span class="float-right">{{ user_rank.0.row_number }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+<section id="listings" class="py-4">
+  <div class="container">
+      <div class="row">
+
+          {% if images %}
+              {% include 'partials/_image_list.html' %}
+          {% else %}
+              <div class="col-md-12">
+                  <p>No images avaliable</p>
+              </div>
+          {% endif %}
+      </div>
+  </div>
+</section>
+{% endblock  %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+  <script src="/js/register.js'"></script>
+{% endblock %}
+{% block title %} | Register {% endblock %}
+
+{% block content %}
+  <section id="register" class="bg-light py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mx-auto">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h4>
+                <i class="fas fa-user-plus"></i> Register</h4>
+            </div>
+            <!-- alerts -->
+            {% include 'partials/_alerts.html' %}
+            <div class="card-body">
+                <form action="/auth/register" method="POST">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <div class="form-group">
+                  <label for="first_name">First Name</label>
+                  <input type="text" name="firstName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="last_name">Last Name</label>
+                  <input type="text" name="lastName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="username">Username</label>
+                  <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input type="email" name="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="password2">Password</label>
+                  <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="password">Confirm Password</label>
+                  <input type="password" name="password2" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="country">Country</label>
+                  <select name="country" id="country" class="form-control">
+                    {% for country in countries %}
+                      <option value="{{ country.id }}" {% if country.id == 20 %}selected{% endif %}>{{country.name}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="subcountry">County</label>
+                  <select name="subcountry" id="county" class="form-control">
+                    {% for subcountry in subcountries %}
+                      <option value="{{ subcountry.id }}" data-country-id="{{ subcountry.countryId }}">{{subcountry.name}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="city">City</label>
+                  <select name="city" id="city" class="form-control">
+                    <option selected>City</option>
+                    {% for city in cities %}
+                      <option value="{{ city.id }}" data-country-id="{{ city.countryId }}" data-subcountry-id="{{ city.subcountryId }}">{{city.name}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <input type="submit" value="Register" class="btn btn-secondary btn-block">
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

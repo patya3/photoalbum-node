@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% load bootstrap_pagination %}
+
+{% block content %}
+<section id="showcase-inner" class="py-5 text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12">
+                <h1 class="display-4">Most Popular Destinations</h1>
+                <p class="lead">Tourist's favorite places.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Breadcrumb -->
+<section id="bc" class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'index' %}">
+                        <i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="breadcrumb-item active"> Most Popular Destinations</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        {% if popular_cities %}
+            {% for city in popular_cities %}
+                <div class="col-md-12 col-lg-12 mb-4 gallery">
+                    <div class="card mb-3" >
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                            <img src="{{ city.main_image.url }}" class="card-img" alt="{{ city.city__name }}">
+                            </div>
+                            <div class="col-md-8">
+                            <div class="card-body">
+                                <h2 class="card-title">{{ city.city__name }}</h5>
+                                <h6 class="card-title mt-2">Description:</h3>
+                                <p class="card-text">
+                                    {% if city.char_desc %}
+                                        {{ city.char_desc }}
+                                    {% else %}
+                                        No Description avaliable
+                                    {% endif %}
+                                </p>
+                                <div class="card-text">
+                                    <span class="text-secondary">Images taken from that city by tourists:</span> {{ city.count_image }}
+                                </div>
+                                <a href="{% url 'list_images' %}?city={{ city.city_id }}"class="btn btn-primary bottom-right text-light">View all images</a>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-md-12">
+                <p>No data avaliable</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock  %}

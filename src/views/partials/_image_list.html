@@ -1,0 +1,36 @@
+{% load el_pagination_tags %}
+
+{% lazy_paginate images %}
+{% for image in images %}
+    <div class="col-md-6 col-lg-4 mb-4 gallery">
+        <div class="card listing-preview">
+            <a class="elem" 
+                href="{{ image.photo.url }}" 
+                title="{{ image.name }}" 
+                data-lcl-txt="{{ image.description }}" 
+                data-lcl-author="{{ image.user.username }}" 
+                data-lcl-thumb="{{ image.photo.url }}">
+            <span style="background-image: url({{ image.photo.url }});"></span>
+            <img class="card-img-top" src="{{ image.photo.url }}" alt="{{ image.name }}">
+            </a>
+            <div class="card-body">
+                <div class="listing-heading text-center">
+                    <h6 class="text-primary">{{ image.name }}</h6>
+                    <h6 class="text-secondary">
+                        Rating: 
+                        {% if image.rate_avg %}
+                            {{ image.rate_avg }}
+                        {% else %}
+                            No rating
+                        {% endif %}
+                    </h6>
+                    {% comment %}
+                    <p><i class="fas fa-map-marker text-secondary"></i>{{ image.description }}</p> {% endcomment %}
+                </div>
+                <hr>
+                <a href="{% url 'image' image.id %}" class="btn btn-primary btn-block">Details | Comment</a>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% show_more %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<section id="bc" class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'index' %}">
+                        <i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="breadcrumb-item active"> 
+                    <a href="{% url 'list_images' %}"> Browse Images</a>
+                </li>
+                <li class="breadcrumb-item active"> {{ user.username }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+<section id="userdata">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card mb-12">
+          <img class="card-img-top" src="{{ image.photo.url }}" alt="Last uploaded image">
+          <div class="card-body">
+            <h5 class="card-title">{{ image.name }}</h5>
+            <h6 class="text-secondary">{{ image.description }}</h6>
+            <!-- Fields -->
+            <div class="row mb-2 fields">
+                <div class="col-md-6">
+                    <ul class="list-group list-group-flush">
+                    <li class="list-group-item text-secondary">
+                        <i class="fas fa-user"></i> Uploader: 
+                        <span class="float-right"><a href="{% url 'profile' image.user.id %}">{{ image.user.username }}</a></span>
+                    </li>
+                    <li class="list-group-item text-secondary">
+                        <i class="fas fa-image"></i> Category:
+                        <span class="float-right">{{ image.category.name }}</span>
+                    </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-group list-group-flush">
+                    <li class="list-group-item text-secondary">
+                        <i class="far fa-calendar"></i> Upload Date:
+                        <span class="float-right">{{ image.upload_date|date:"M d, Y" }}</span>
+                    </li>
+                    <li class="list-group-item text-secondary">
+                        <i class="fas fa-city"></i> City:
+                        <span class="float-right">{{ image.city.name }} | {{ image.city.country.name }}</span>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% if user.is_authenticated %}
+    <section>
+        <div class="container">
+            <h3 class="mt-4">Rate this image</h3>
+            <form id="rateForm" action="{% url 'rate_image' image.id %}" method="POST">
+                {% csrf_token %}
+                {{ form.stars.errors }}
+                <div class="form-group">
+                    <label for="{{ form.stars.id_for_label }}" class="col-form-label">Rating:</label>
+                    {{ form.stars }}
+                </div>
+                {{ form.comment.errors }}
+                <div class="form-group">
+                    <label for="{{ form.comment.id_for_label }}" class="col-form-label">Comment:</label>
+                    {{ form.comment }}
+                </div>
+                <button type="submit" id="submitRateForm" class="btn btn-primary">Rate</button>
+                <hr>
+            </form>
+        </div>
+    </section>
+{% endif %}
+<section>
+    <div class="container">
+    <h3 class="mt-4">Ratings</h3>
+        {% if ratings %}
+            {% for rating in ratings %}
+                <div class="row mt-4 mb-4">
+                <div class="col-md-12">
+                    <div class="card mb-12">
+                    <div class="card-body">
+                        <h5 class="card-title">Rate: {{ rating.stars }}</h5>
+                        <h6 class="text-secondary">{{ rating.comment }}</h6>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <h6 class="mt-4 mb-4">No Ratings Avaliable.</h6>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

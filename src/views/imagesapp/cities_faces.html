@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'js/lc_lightbox.lite.min.js' %}"></script>
+    <script>
+        lc_lightbox('.elem', {
+            wrap_class: 'lcl_fade_oc',
+            gallery : true, 
+            thumb_attr: 'data-lcl-thumb', 
+            skin: 'dark',
+            // more options here
+        });
+    </script>
+{% endblock scripts %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static 'css/lc_lightbox.min.css' %}">
+{% endblock stylesheets %}
+
+{% block content %}
+<section id="showcase-inner" class="py-5 text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12">
+                <h1 class="display-4">Faces of the Cities</h1>
+                <p class="lead">Discover each cities most beautiful places.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Breadcrumb -->
+<section id="bc" class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'index' %}">
+                        <i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="breadcrumb-item active"> Faces of the cities</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+<section id="listings" class="py-4">
+    <div class="container">
+    <form id="searchUserForm" method="GET" action="{% url 'cities_faces' %}">
+        <div class="input-group flex-nowrap mb-3">
+            <select name="city" id="city" class="form-control">
+                <option selected="true" value="-1">Select a City</option>
+                {% for city in cities %}
+                    <option value="{{ city.id }}"
+                            {% if city.id == values.city|add:"0" %}
+                                selected
+                            {% endif %}>
+                            {{city.name}}
+                    </option>
+                {% endfor %}
+            </select>
+            <div class="input-group-prepend">
+                <button class="input-group-text" id="searchUserFormSubmit">Search</button>
+            </div>
+        </div>
+    </form>
+        <div class="row">
+            {% if cities_images %}
+                {% for data in cities_images %}
+                    <div class="col-md-12 text-center m-4"><h3 class="m-auto">{{data.city_name}}</h3></div>
+                        
+                    {% for image in data.citys_images %}
+                        <div class="col-md-6 col-lg-6 mb-4">
+                        <a class="elem" 
+                            href="{{ image.photo.url }}" 
+                            title="<span>{{ data.city_name }}</span> | {{ image.name }}"
+                            data-lcl-txt="{{ image.description }}" 
+                            data-lcl-author="{{ image.user.username }}" 
+                            data-lcl-thumb="{{ image.photo.url }}">
+                            <span style="background-image: url({{ image.photo.url }});"></span>
+                            <img class="img-fluid" src="{{ image.photo.url }}" alt="{{ image.name }}">
+                            </a>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+            <div class="col-md-12">
+                <p>No images avaliable</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock content %}

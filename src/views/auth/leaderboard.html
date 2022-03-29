@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% load bootstrap_pagination %}
+
+{% block content %}
+<section id="showcase-inner" class="py-5 text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12">
+                <h1 class="display-4">Uploaders Leaderboard</h1>
+                <p class="lead">Check which user uploaded the most photo.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Breadcrumb -->
+<section id="bc" class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'index' %}">
+                        <i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="breadcrumb-item active"> Leaderboard</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<div class="container">
+    <form id="searchUserForm" method="GET" action="{% url 'leaderboard' %}">
+        <div class="input-group flex-nowrap mb-3">
+            <input name="username" type="text" class="form-control" placeholder="Search by Username" aria-label="Search by Username" aria-describedby="addon-wrapping">
+            <div class="input-group-prepend">
+                <button class="input-group-text" id="searchUserFormSubmit">Search</button>
+            </div>
+        </div>
+    </form>
+    <table class="table mb-4">
+        <thead>
+            <tr>
+            <th scope="col">#</th>
+            <th scope="col">Username</th>
+            <th scope="col">Uploaded images</th>
+            <th scope="col">View Profile</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+            <th scope="row">{{ forloop.counter|add:users.start_index|add:"-1" }}</th>
+            <td>{{ user.username }}</td>
+            <td>{{ user.image_count }}</td>
+            <td><a href="{% url 'profile' user.id %}" class="btn btn-primary">Profile</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% bootstrap_paginate users %}
+</div>
+{% endblock  %}

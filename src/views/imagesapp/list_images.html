@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load bootstrap_pagination %}
+{% block scripts %}
+    <script src="{% static 'js/lc_lightbox.lite.min.js' %}"></script>
+    <script src="{% static 'js/browse-images.js' %}"></script>
+    <script src="{% static 'js/el-pagination.js' %}"></script>
+    <script>$.endlessPaginate({paginateOnScroll: true});</script>
+{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static 'css/lc_lightbox.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<section id="showcase-inner" class="py-5 text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12">
+                <h1 class="display-4">Browse Images</h1>
+                <p class="lead">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sunt, pariatur!</p>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="showcase-inner" class="showcase-search text-white py-4">
+    <div class="container">
+        <div class="row text-center">
+        <div class="col-md-12">
+            <form action="{% url 'list_images' %}">
+            <!-- Form Row 1 -->
+            <div class="form-row">
+                <div class="col-md-8 mb-3">
+                    <label class="sr-only">Keywords</label>
+                    <input type="text" name="keywords" class="form-control" placeholder="Keyword" value="{{values.keywords}}">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="sr-only">Select a Country</label>
+                    <select name="country" id="country" class="form-control">
+                        <option selected="true" value="-1">Select a Country</option>
+                        {% for country in filters.countries %}
+                            <option value="{{ country.id }}"
+                                {% if country.id == values.country|add:"0" %}
+                                    selected
+                                {% endif %}
+                            >{{country.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-8 mb-3">
+                    <label class="sr-only">Select a category</label>
+                    <select name="category" id="category" class="form-control">
+                        <option selected="true" value="-1">Select a Category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}"
+                                {% if category.id == values.category|add:"0" %}
+                                    selected
+                                {% endif %}
+                            >{{category.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="sr-only">Select a County</label>
+                    <select name="county" id="county" class="form-control">
+                        <option selected="true" value="-1">Select a County</option>
+                        {% for county in filters.counties %}
+                            <option value="{{ county.id }}"
+                                    data-country-id="{{ county.country_id }}"
+                                    {% if county.id == values.county|add:"0" %}
+                                        selected
+                                    {% endif %}>
+                                    {{county.name}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="sr-only">Date From</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ values.date_from }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="sr-only">Date To</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ values.date_to }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="sr-only">City</label>
+                    <select name="city" id="city" class="form-control">
+                        <option selected="true" value="-1">Select a City</option>
+                        {% for city in filters.cities %}
+                            <option value="{{ city.id }}"
+                                    data-country-id="{{ city.country_id }}"
+                                    data-county-id="{{ city.county_id }}"
+                                    {% if city.id == values.city|add:"0" %}
+                                        selected
+                                    {% endif %}>
+                                    {{city.name}} | {{ city.image_count }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            <button class="btn btn-secondary btn-block mt-4" type="submit">Submit form</button>
+            </form>
+        </div>
+        </div>
+    </div>
+</section>
+
+<!-- Breadcrumb -->
+<section id="bc" class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'index' %}">
+                        <i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="breadcrumb-item active"> Browse Images</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Listings -->
+<section id="listings" class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group list-group-root well">
+                    {% for parent in categories %}
+                        <div href="#item-{{ parent.id }}" class="list-group-item" {% if parent.subcategories %}data-toggle="collapse"{% endif %} >
+                            <i class="fas fa-chevron-right"></i>&nbsp;&nbsp;
+                            <a href="{% url 'list_images' %}?category={{ parent.id }}">{{ parent.name }} ({{ parent.image_count }})</a>
+                        </div>
+                        {% if parent.subcategories %}
+                            <div class="list-group collapse" id="item-{{ parent.id }}">
+                                {% for child in parent.subcategories %}
+                                    <a href="{% url 'list_images' %}?category={{ child.id }}" class="list-group-item">{{ child.name }} ({{ child.image_count }})</a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-9">
+                {% if values.category and values.category != "-1" and top_in_category %}
+                    <div class="col-md-12 col-lg-12 mb-4 gallery" style="padding: 0">
+                        <div class="card mb-3" >
+                            <div class="row no-gutters">
+                                <div class="col-md-4">
+                                <img src="{{ top_in_category.photo.url }}" class="card-img" alt="{{ city.city__name }}">
+                                </div>
+                                <div class="col-md-8">
+                                <div class="card-body">
+                                    <h3 class="text-secondary">Top In Category</h3>
+                                    <h5 class="card-title">Title: {{ top_in_category.name }}</h5>
+                                    <div class="card-text">
+                                        <span class="text-secondary">Rating:</span> {{ top_in_category.avg_rating }}
+                                    </div>
+                                    <a href="{% url 'image' top_in_category.id %}" class="btn btn-primary bottom-right text-light">View image</a>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="row">
+                {% if images %}
+                    {% include 'partials/_image_list.html' %}
+                {% else %}
+                    <div class="col-md-12">
+                        <p>No images avaliable</p>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

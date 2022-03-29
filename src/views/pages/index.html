@@ -1,0 +1,109 @@
+{% extends 'base.html' %} {% block title %} | Welcome {% endblock %} {% block
+content %}
+<section id="showcase-inner" class="py-5 text-white">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-12">
+        <h1 class="display-4">Welcome on the page</h1>
+        <p class="lead">
+          Discover beatiful photos about places, buildings, animals and so on!
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="listings" class="py-5">
+  <div class="container">
+    <h3 class="text-center mb-3">Latest Uploaded images</h3>
+    <div class="row">
+      {% if images %} {% for image in images %}
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card listing-preview">
+          <img class="card-img-top" src="{{ image.photoUrl }}" alt="" />
+          <div class="card-body">
+            <div class="listing-heading text-center">
+              <h5 class="text-primary">{{ image.name }}</h5>
+              <p>
+                <i class="fas fa-map-marker text-secondary"></i> {{
+                image.description }}
+              </p>
+            </div>
+            <hr />
+            <a href="" class="btn btn-primary btn-block">Details | Comment</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %} {% endif %}
+    </div>
+  </div>
+</section>
+
+<section id="statistics" class="pb-5">
+  <div class="container">
+    <h3 class="text-center mb-3">Upload Statistics</h3>
+    <div class="row">
+      {% if statistics %}
+      <ul class="list-group m-auto">
+        <li class="list-group-item">
+          Daily uploads:
+          <span class="text-danger">{{ statistics.daily }} photos</span>
+        </li>
+        <li class="list-group-item">
+          Monthly uploads:
+          <span class="text-danger">{{ statistics.monthly }} photos</span>
+        </li>
+        <li class="list-group-item">
+          Yearly uploads:
+          <span class="text-danger">{{ statistics.yearly }} photos</span>
+        </li>
+        <li class="list-group-item">
+          All time uploads:
+          <span class="text-danger">{{ statistics.all_time }} photos</span>
+        </li>
+        <li class="list-group-item">
+          Most images was uploaded about
+          <span class="text-danger"
+            >{{ statistics.first_city.0.city__name }}
+            <span class="text-secondary"
+              >({{ statistics.first_city.0.image_count }} photos)</span
+            >
+          </span>
+        </li>
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section id="services" class="py-5 bg-secondary text-white">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-4">
+        <i class="fas fa-upload fa-4x mr-4"></i>
+        <hr />
+        <h3>Upload Images</h3>
+        <p>Upload images were taken by you and share it with others.</p>
+      </div>
+      <div class="col-md-4">
+        <i class="fas fa-image fa-4x mr-4"></i>
+        <hr />
+        <h3>Discover Images</h3>
+        <p>
+          Discover images in many categories and filter it by places upload date
+          and so on.
+        </p>
+      </div>
+      <div class="col-md-4">
+        <i class="fas fa-comment fa-4x mr-4"></i>
+        <hr />
+        <h3>Rate Images</h3>
+        <p>
+          You can rate images uploaded by others and you can comment it beside
+          your rate.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

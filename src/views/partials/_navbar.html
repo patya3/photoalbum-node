@@ -1,0 +1,82 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/images">
+      <i class="fas fa-images fa-2x"></i>
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarNavAltMarkup"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <ul class="navbar-nav">
+        <li class="nav-item active mr-3">
+          <a class="nav-link" href="/images">Home</a>
+        </li>
+        <li class="dropdown nav-item mr-3">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            role="button"
+            id="dropdownMenuLink"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            Images
+          </a>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item" href="">Browse images</a>
+            <a class="dropdown-item" href="">Faces of the Cities</a>
+            <a class="dropdown-item" href="">Popular destinations</a>
+          </div>
+        </li>
+        <li class="nav-item mr-3">
+          <a class="nav-link" href="/images/upload_image"
+            >Upload Image {{request.user.username}}</a
+          >
+        </li>
+        <li class="nav-item mr-3">
+          <a class="nav-link" href="">Leaderboard</a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav ml-auto">
+        {% if request.isAuthenticated() === false %}
+        <li class="nav-item mr-3">
+          <a class="nav-link" href="/auth/register">
+            <i class="fas fa-user-plus"></i> Register</a
+          >
+        </li>
+        <li class="nav-item mr-3">
+          <a class="nav-link" href="/auth/login">
+            <i class="fas fa-sign-in-alt"></i>
+
+            Login</a
+          >
+        </li>
+        {% else %}
+        <li class="nav-item mr-3">
+          <a href="" class="nav-link">
+            <i class="fas fa-images"></i> My Images
+          </a>
+        </li>
+        <li class="nav-item mr-3">
+          <a
+            href="javascript:{document.getElementById('logout').submit()}"
+            class="nav-link"
+          >
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+          <form action="/auth/logout" id="logout" method="POST">
+            <input type="hidden" />
+          </form>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
