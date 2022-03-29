@@ -49,10 +49,14 @@ router.post(
 
       const countryAndSubcountry = (
         await Promise.all([
-          models.country.findById(cityObject.countryId),
-          models.subcountry.findById(cityObject.subcountryId),
+          models.country.findOne({ _id: cityObject.countryId }),
+          models.subcountry.findOne({ _id: cityObject.subcountryId }),
         ])
-      ).map((e) => ({ id: e.id, name: e.name }));
+      )
+        .filter((e) => e && e._id)
+        .map((e) => {
+          return { id: e._id, name: e.name };
+        });
 
       const newImage = new models.image({
         title,

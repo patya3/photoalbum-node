@@ -1,5 +1,6 @@
-{% extends 'base.html' %} {% block title %} | Welcome {% endblock %} {% block
-content %}
+{% extends 'base.html' %} 
+{% block title %} | Welcome {% endblock %}
+{% block content %}
 <section id="showcase-inner" class="py-5 text-white">
   <div class="container">
     <div class="row text-center">
@@ -43,35 +44,7 @@ content %}
   <div class="container">
     <h3 class="text-center mb-3">Upload Statistics</h3>
     <div class="row">
-      {% if statistics %}
-      <ul class="list-group m-auto">
-        <li class="list-group-item">
-          Daily uploads:
-          <span class="text-danger">{{ statistics.daily }} photos</span>
-        </li>
-        <li class="list-group-item">
-          Monthly uploads:
-          <span class="text-danger">{{ statistics.monthly }} photos</span>
-        </li>
-        <li class="list-group-item">
-          Yearly uploads:
-          <span class="text-danger">{{ statistics.yearly }} photos</span>
-        </li>
-        <li class="list-group-item">
-          All time uploads:
-          <span class="text-danger">{{ statistics.all_time }} photos</span>
-        </li>
-        <li class="list-group-item">
-          Most images was uploaded about
-          <span class="text-danger"
-            >{{ statistics.first_city.0.city__name }}
-            <span class="text-secondary"
-              >({{ statistics.first_city.0.image_count }} photos)</span
-            >
-          </span>
-        </li>
-      </ul>
-      {% endif %}
+      placeholder
     </div>
   </div>
 </section>

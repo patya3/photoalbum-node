@@ -9,6 +9,7 @@ const {
   ensureNotAuthenticated,
 } = require('../utils/ensureAuthenticated');
 
+const homePage = 'pages/index.html';
 const registerPage = 'auth/register.html';
 const loginPage = 'auth/login.html';
 
@@ -40,7 +41,7 @@ router.post(
           if (error) {
             return res.render(loginPage, errorMsg('Invalid credentials.'));
           }
-          return res.render(loginPage, successMsg('Sucessfully loged in.'));
+          return res.redirect('/images');
         });
       })(req, res, next);
     } else {
@@ -72,7 +73,16 @@ router.get(
 );
 
 router.post('/register', ensureNotAuthenticated, csrfProtection, (req, res) => {
-  const { country, subcountry, city, password2, _csrf, ...formData } = req.body;
+  const {
+    country,
+    subcountry,
+    city,
+    password2,
+    _csrf,
+    firstName,
+    lastName,
+    ...formData
+  } = req.body;
   if (
     formData.email &&
     formData.username &&
@@ -91,14 +101,19 @@ router.post('/register', ensureNotAuthenticated, csrfProtection, (req, res) => {
         const newUser = new userModel({
           ...formData,
           location: {
-            country: 'Magyarország',
-            county: 'Csongrád-Csanád',
-            city: 'Szeged',
+            country,
+            subcountry,
+            city,
+          },
+          name: {
+            firstName,
+            lastName,
           },
         });
 
         newUser.save((error) => {
           if (error) {
+            console.log(error);
             return res.render(registerPage, errorMsg(error._message));
           }
           return res.render(

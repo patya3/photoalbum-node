@@ -48,7 +48,7 @@
                   <label for="country">Country</label>
                   <select name="country" id="country" class="form-control">
                     {% for country in countries %}
-                      <option value="{{ country.id }}" {% if country.id == 20 %}selected{% endif %}>{{country.name}}</option>
+                      <option value="{{ country.name }}" {% if country.id == 20 %}selected{% endif %}>{{country.name}}</option>
                     {% endfor %}
                   </select>
                 </div>
@@ -56,7 +56,7 @@
                   <label for="subcountry">County</label>
                   <select name="subcountry" id="county" class="form-control">
                     {% for subcountry in subcountries %}
-                      <option value="{{ subcountry.id }}" data-country-id="{{ subcountry.countryId }}">{{subcountry.name}}</option>
+                      <option value="{{ subcountry.name }}" data-country-id="{{ subcountry.countryId }}">{{subcountry.name}}</option>
                     {% endfor %}
                   </select>
                 </div>
@@ -65,7 +65,7 @@
                   <select name="city" id="city" class="form-control">
                     <option selected>City</option>
                     {% for city in cities %}
-                      <option value="{{ city.id }}" data-country-id="{{ city.countryId }}" data-subcountry-id="{{ city.subcountryId }}">{{city.name}}</option>
+                      <option value="{{ city.name }}" data-country-id="{{ city.countryId }}" data-subcountry-id="{{ city.subcountryId }}">{{city.name}}</option>
                     {% endfor %}
                   </select>
                 </div>

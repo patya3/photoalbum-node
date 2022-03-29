@@ -43,15 +43,17 @@ function collectEntities() {
     if (!entities.subcountries.some((s) => s.name === city.subcountry)) {
       entities.subcountries.push({
         _id: subcountryId,
-        countryId: countryId.toString(),
+        countryId: entities.countries.find((e) => e.name === city.country)._id,
         name: city.subcountry,
       });
     }
     if (!entities.cities.some((ci) => ci.name === city.name)) {
       entities.cities.push({
         _id: cityId,
-        countryId: countryId.toString(),
-        subcountryId: subcountryId.toString(),
+        countryId: entities.countries.find((e) => e.name === city.country)._id,
+        subcountryId: entities.subcountries.find(
+          (e) => e.name === city.subcountry
+        )._id,
         name: city.name,
       });
     }
