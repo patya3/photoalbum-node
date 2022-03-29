@@ -39,6 +39,7 @@ require('./models/country.model');
 require('./models/subcountry.model');
 require('./models/city.model');
 require('./models/image.model');
+require('./models/category.model');
 
 const userModel = mongoose.model('user');
 

@@ -24,14 +24,14 @@
           <img class="card-img-top" src="{{ image.photoUrl }}" alt="" />
           <div class="card-body">
             <div class="listing-heading text-center">
-              <h5 class="text-primary">{{ image.name }}</h5>
+              <h5 class="text-primary">{{ image.title }}</h5>
               <p>
                 <i class="fas fa-map-marker text-secondary"></i> {{
                 image.description }}
               </p>
             </div>
             <hr />
-            <a href="" class="btn btn-primary btn-block">Details | Comment</a>
+            <a href="/images/image/{{image._id}}" class="btn btn-primary btn-block">Details | Comment</a>
           </div>
         </div>
       </div>

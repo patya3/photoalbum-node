@@ -7,13 +7,13 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'index' %}">
+                    <a href="/images">
                         <i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="breadcrumb-item active"> 
-                    <a href="{% url 'list_images' %}"> Browse Images</a>
+                    <a href="#"> Browse Images</a>
                 </li>
-                <li class="breadcrumb-item active"> {{ user.username }}</li>
+                <li class="breadcrumb-item active"> {{ request.user.username }}</li>
             </ol>
         </nav>
     </div>
@@ -23,9 +23,9 @@
     <div class="row">
       <div class="col-md-12">
         <div class="card mb-12">
-          <img class="card-img-top" src="{{ image.photo.url }}" alt="Last uploaded image">
+          <img class="card-img-top" src="{{ image.photoUrl }}" alt="Last uploaded image">
           <div class="card-body">
-            <h5 class="card-title">{{ image.name }}</h5>
+            <h5 class="card-title">{{ image.title }}</h5>
             <h6 class="text-secondary">{{ image.description }}</h6>
             <!-- Fields -->
             <div class="row mb-2 fields">
@@ -33,7 +33,7 @@
                     <ul class="list-group list-group-flush">
                     <li class="list-group-item text-secondary">
                         <i class="fas fa-user"></i> Uploader: 
-                        <span class="float-right"><a href="{% url 'profile' image.user.id %}">{{ image.user.username }}</a></span>
+                        <span class="float-right"><a href="#">{{ image.user.username }}</a></span>
                     </li>
                     <li class="list-group-item text-secondary">
                         <i class="fas fa-image"></i> Category:
@@ -45,11 +45,11 @@
                     <ul class="list-group list-group-flush">
                     <li class="list-group-item text-secondary">
                         <i class="far fa-calendar"></i> Upload Date:
-                        <span class="float-right">{{ image.upload_date|date:"M d, Y" }}</span>
+                        <span class="float-right">{{ image.createdAt }}</span>
                     </li>
                     <li class="list-group-item text-secondary">
                         <i class="fas fa-city"></i> City:
-                        <span class="float-right">{{ image.city.name }} | {{ image.city.country.name }}</span>
+                        <span class="float-right">{{ image.location.city.name }} | {{ image.location.country.name }}</span>
                     </li>
                     </ul>
                 </div>
@@ -60,21 +60,19 @@
     </div>
   </div>
 </section>
-{% if user.is_authenticated %}
+{% if request.isAuthenticated() %}
     <section>
         <div class="container">
             <h3 class="mt-4">Rate this image</h3>
-            <form id="rateForm" action="{% url 'rate_image' image.id %}" method="POST">
-                {% csrf_token %}
-                {{ form.stars.errors }}
+            <form id="rateForm" action="#" method="POST">
+                
                 <div class="form-group">
                     <label for="{{ form.stars.id_for_label }}" class="col-form-label">Rating:</label>
-                    {{ form.stars }}
+                    <input type="number" name="" id="" class="form-control">
                 </div>
-                {{ form.comment.errors }}
                 <div class="form-group">
                     <label for="{{ form.comment.id_for_label }}" class="col-form-label">Comment:</label>
-                    {{ form.comment }}
+                   <textarea name="" id="" class="form-control"></textarea>
                 </div>
                 <button type="submit" id="submitRateForm" class="btn btn-primary">Rate</button>
                 <hr>
