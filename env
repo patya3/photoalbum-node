@@ -1,3 +1,0 @@
-PORT=3001
-MONGODB_CONNECTION_URI=mongodb+srv://patya3:cTy6bR41Mp5JlYCt@prf-cluster.j7nry.mongodb.net/photoalbum
-SESSION_SECRET=secret
