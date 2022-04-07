@@ -1,0 +1,24 @@
+{% extends 'admin/base.html' %} 
+{% block title %} | Users {% endblock %}
+{% block content %}
+{% if users %} 
+<table class="table mb-4">
+  <thead>
+      <tr>
+      <th scope="col">#</th>
+      <th scope="col">Username</th>
+      <th scope="col">Uploaded images</th>
+      </tr>
+  </thead>
+  <tbody>
+  {% for user in users %}
+      <tr>
+      <td><a href="/admin/users/{{user._id}}">{{user.username}}</a></td>
+      <td>{{user.name.firstName}}</td>
+      <td>{{user.location.city}}</td>
+      </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}
