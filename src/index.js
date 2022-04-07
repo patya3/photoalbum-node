@@ -7,6 +7,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const expressSession = require('express-session');
 const path = require('path');
+const MongoStore = require('connect-mongo');
 
 const app = express();
 
@@ -77,9 +78,9 @@ passport.deserializeUser((user, done) => {
 app.use(
   expressSession({
     secret,
-    resave: true,
+    resave: false,
     saveUninitialized: true,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
+    store: MongoStore.create({ mongoUrl: connectionUri }),
   })
 );
 app.use(passport.initialize());
@@ -88,6 +89,7 @@ app.use(passport.session());
 app.use(require('./utils/inject-globals'));
 app.use('/auth', require('./routes/auth.routes'));
 app.use('/images', require('./routes/image.routes'));
+app.use('/admin', require('./routes/admin.routes'));
 
 app.use((req, res, next) => {
   res.status(404).send('Not found');

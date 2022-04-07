@@ -9,7 +9,7 @@ const { ensureAuthenticated } = require('../utils/ensureAuthenticated');
 const templates = {
   upload: 'imagesapp/upload_image.html',
   home: 'pages/index.html',
-  image: 'imagesapp/image.html'
+  image: 'imagesapp/image.html',
 };
 
 const models = {
@@ -17,23 +17,24 @@ const models = {
   image: mongoose.model('image'),
   country: mongoose.model('country'),
   subcountry: mongoose.model('subcountry'),
-  category: mongoose.model('category')
+  category: mongoose.model('category'),
 };
 
 const router = express.Router();
 
 /* home */
 router.get('/', async (req, res) => {
-  const images = await models.image.find().select(['title', 'photoUrl', '_id', 'description']);
-  console.log(images);
+  const images = await models.image
+    .find()
+    .select(['title', 'photoUrl', '_id', 'description']);
   return res.render(templates.home, { images });
 });
 
 router.get('/image/:id', async (req, res) => {
   const id = req.params.id;
   const image = await models.image.findById(id);
-  return res.render(templates.image, {image})
-})
+  return res.render(templates.image, { image });
+});
 
 /* Upload Image */
 router.get(
@@ -41,9 +42,15 @@ router.get(
   ensureAuthenticated,
   csrfProtection,
   async (req, res) => {
-    const cities = await models.city.find().select(['name', '_id', 'subcountryId', 'countryId']);
+    const cities = await models.city
+      .find()
+      .select(['name', '_id', 'subcountryId', 'countryId']);
     const categories = await models.category.find();
-    return res.render(templates.upload, { csrfToken: req.csrfToken(), cities, categories });
+    return res.render(templates.upload, {
+      csrfToken: req.csrfToken(),
+      cities,
+      categories,
+    });
   }
 );
 
@@ -92,7 +99,6 @@ router.post(
 
       newImage.save((error) => {
         if (error) {
-          console.log(error);
           return res.render(templates.upload, errorMsg(error._message));
         }
         return res.render(

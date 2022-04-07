@@ -9,19 +9,23 @@ const {
   ensureNotAuthenticated,
 } = require('../utils/ensureAuthenticated');
 
-const homePage = 'pages/index.html';
-const registerPage = 'auth/register.html';
-const loginPage = 'auth/login.html';
+const templates = {
+  home: 'pages/index.html',
+  register: 'auth/register.html',
+  login: 'auth/login.html',
+};
 
-const userModel = mongoose.model('user');
-const cityModel = mongoose.model('city');
-const countryModel = mongoose.model('country');
-const subcountryModel = mongoose.model('subcountry');
+const models = {
+  user: mongoose.model('user'),
+  city: mongoose.model('city'),
+  country: mongoose.model('country'),
+  subcountry: mongoose.model('subcountry'),
+};
 
 const router = express.Router();
 /* /login */
 router.get('/login', ensureNotAuthenticated, csrfProtection, (req, res) => {
-  return res.render(loginPage, { csrfToken: req.csrfToken() });
+  return res.render(templates.login, { csrfToken: req.csrfToken() });
 });
 
 router.post(
@@ -34,19 +38,25 @@ router.post(
     if (username && password) {
       passport.authenticate('local', (error, user) => {
         if (error) {
-          return res.render(loginPage, errorMsg('Internal server error.'));
+          return res.render(
+            templates.login,
+            errorMsg('Internal server error.')
+          );
         }
 
         req.logIn(user, (error) => {
           if (error) {
-            return res.render(loginPage, errorMsg('Invalid credentials.'));
+            return res.render(
+              templates.login,
+              errorMsg('Invalid credentials.')
+            );
           }
           return res.redirect('/images');
         });
       })(req, res, next);
     } else {
       return res.render(
-        loginPage,
+        templates.login,
         errorMsg('Username or password not provided.')
       );
     }
@@ -59,11 +69,11 @@ router.get(
   ensureNotAuthenticated,
   csrfProtection,
   async (req, res) => {
-    const countries = await countryModel.find();
-    const subcountries = await subcountryModel.find();
-    const cities = await cityModel.find();
+    const countries = await models.country.find();
+    const subcountries = await models.subcountry.find();
+    const cities = await models.city.find();
 
-    return res.render(registerPage, {
+    return res.render(templates.register, {
       csrfToken: req.csrfToken(),
       countries,
       subcountries,
@@ -89,16 +99,16 @@ router.post('/register', ensureNotAuthenticated, csrfProtection, (req, res) => {
     formData.password &&
     formData.password !== formData.password2
   ) {
-    userModel.findOne(
+    models.user.findOne(
       { $or: [{ email: formData.email }, { username: formData.username }] },
       (error, user) => {
         if (user || error) {
           return res.render(
-            registerPage,
+            templates.register,
             errorMsg('Email or username alread taken.')
           );
         }
-        const newUser = new userModel({
+        const newUser = new models.user({
           ...formData,
           location: {
             country,
@@ -114,10 +124,10 @@ router.post('/register', ensureNotAuthenticated, csrfProtection, (req, res) => {
         newUser.save((error) => {
           if (error) {
             console.log(error);
-            return res.render(registerPage, errorMsg(error._message));
+            return res.render(templates.register, errorMsg(error._message));
           }
           return res.render(
-            loginPage,
+            templates.login,
             successMsg('Succesfully register, now you can log in')
           );
         });
@@ -125,7 +135,7 @@ router.post('/register', ensureNotAuthenticated, csrfProtection, (req, res) => {
     );
   } else {
     return res.render(
-      registerPage,
+      templates.register,
       errorMsg(
         'Missing fields or password and password confirmation do not match.'
       )
@@ -136,7 +146,7 @@ router.post('/register', ensureNotAuthenticated, csrfProtection, (req, res) => {
 /* /logout */
 router.post('/logout', ensureAuthenticated, (req, res) => {
   req.logout();
-  return res.render(loginPage, successMsg('Succesfully logged out.'));
+  return res.render(templates.login, successMsg('Succesfully logged out.'));
 });
 
 module.exports = router;

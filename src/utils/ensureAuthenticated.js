@@ -8,4 +8,9 @@ function ensureNotAuthenticated(req, res, next) {
   return res.redirect('/images/upload_image');
 }
 
-module.exports = { ensureAuthenticated, ensureNotAuthenticated };
+function ensureAdmin(req, res, next) {
+  if (req.isAuthenticated() && req.user.isSuperuser) return next();
+  return res.redirect('/images');
+}
+
+module.exports = { ensureAuthenticated, ensureNotAuthenticated, ensureAdmin };
