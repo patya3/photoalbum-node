@@ -14,12 +14,11 @@
                 <div class="listing-heading text-center">
                     <h6 class="text-primary">{{ image.title }}</h6>
                     <h6 class="text-secondary">
-                        Rating: 
                         {% if image.rate_avg %}
+                        Rating: 
                             {{ image.rate_avg }}
-                        {% else %}
-                            No rating
                         {% endif %}
+                        <small>{{image.location.city.name}}</small>
                     </h6>
                 </div>
                 <hr>
