@@ -93,13 +93,15 @@ router.get('/browse_images', async (req, res) => {
   /* TODO annotate with rating */
   const images = await models.image
     .find({
+      ...(q.date_from && { createdAt: { $gte: new Date(q.date_from) } }),
+      ...(q.date_to && { createdAt: { $lt: new Date(q.date_to) } }),
       ...(q.country && { 'location.country.id': q.country }),
       ...(q.subcountry && { 'location.subcountry.id': q.subcountry }),
       ...(q.city && { 'location.city.id': q.city }),
       ...(q.keywords && { title: { $regex: new RegExp(q.keywords, 'i') } }),
       ...(q.category && { 'category.id': { $in: categoryFilter } }),
     })
-    .select(['_id', 'title', 'photoUrl']);
+    .select(['_id', 'title', 'photoUrl', 'location.city']);
 
   const imageCountsByCategory = await models.image.aggregate([
     {
@@ -130,6 +132,7 @@ router.get('/browse_images', async (req, res) => {
     images,
     categories,
     categoriesRaw,
+    values: q,
   });
 });
 
