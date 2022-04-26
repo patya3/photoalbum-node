@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% load bootstrap_pagination %}
-
 {% block content %}
 <section id="showcase-inner" class="py-5 text-white">
     <div class="container">
@@ -20,7 +18,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'index' %}">
+                    <a href="/images">
                         <i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="breadcrumb-item active"> Leaderboard</li>
@@ -30,7 +28,7 @@
 </section>
 
 <div class="container">
-    <form id="searchUserForm" method="GET" action="{% url 'leaderboard' %}">
+    <form id="searchUserForm" method="GET" action="/users/leaderboard">
         <div class="input-group flex-nowrap mb-3">
             <input name="username" type="text" class="form-control" placeholder="Search by Username" aria-label="Search by Username" aria-describedby="addon-wrapping">
             <div class="input-group-prepend">
@@ -50,14 +48,13 @@
         <tbody>
         {% for user in users %}
             <tr>
-            <th scope="row">{{ forloop.counter|add:users.start_index|add:"-1" }}</th>
-            <td>{{ user.username }}</td>
-            <td>{{ user.image_count }}</td>
-            <td><a href="{% url 'profile' user.id %}" class="btn btn-primary">Profile</a></td>
+            <th scope="row">{{ loop.index }}</th>
+            <td>{{ user.user.username }}</td>
+            <td>{{ user.count }}</td>
+            <td><a href="/users/profile/{{user._id}}" class="btn btn-primary">Profile</a></td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-    {% bootstrap_paginate users %}
 </div>
 {% endblock  %}

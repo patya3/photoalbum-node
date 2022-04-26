@@ -1,15 +1,48 @@
 {% extends 'base.html' %}
-
-{% load static %}
-{% load bootstrap_pagination %}
-{% block scripts %}
-    <script src="{% static 'js/lc_lightbox.lite.min.js' %}"></script>
-    <script src="{% static 'js/browse-images.js' %}"></script>
-    <script src="{% static 'js/el-pagination.js' %}"></script>
-    <script>$.endlessPaginate({paginateOnScroll: true});</script>
-{% endblock %}
 {% block stylesheets %}
-    <link rel="stylesheet" href="{% static 'css/lc_lightbox.min.css' %}">
+    <link rel="stylesheet" href="/css/lc_lightbox.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+{% block scripts %}
+    <script src="/js/lc_lightbox.lite.min.js"></script>
+    <script src="/js/browse-images.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="/js/searchSelect.js"></script>
+    <script>
+        function callback(data, page) {
+            return {
+                results: data.map((item) => {
+                return {
+                    id: item._id,
+                    text: item.name,
+                };
+                }),
+            }
+        }
+      searchSelect('#id_city','/api/cities', callback);
+      searchSelect('#id_subcountry','/api/subcountries', callback);
+      searchSelect('#id_country','/api/countries', callback);
+    </script>
+    <script>
+        $(window).scroll(function () {
+            // End of the document reached?
+            if ($(document).height() - $(this).height() == $(this).scrollTop()) {
+                $.ajax({
+                    type: "GET",
+                    url: "/api/cities",
+                    contentType: "application/json; charset=utf-8",
+                    data: '',
+                    dataType: "json",
+                    success: function (data) {
+                        console.log('Test')
+                    },
+                    error: function (req, status, error) {
+                        console.error("Error try again");
+                    }
+                });
+            }
+        }); 
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -27,7 +60,7 @@
     <div class="container">
         <div class="row text-center">
         <div class="col-md-12">
-            <form action="{% url 'list_images' %}">
+            <form action="/images/browse_images">
             <!-- Form Row 1 -->
             <div class="form-row">
                 <div class="col-md-8 mb-3">
@@ -36,46 +69,27 @@
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <label class="sr-only">Select a Country</label>
-                    <select name="country" id="country" class="form-control">
-                        <option selected="true" value="-1">Select a Country</option>
-                        {% for country in filters.countries %}
-                            <option value="{{ country.id }}"
-                                {% if country.id == values.country|add:"0" %}
-                                    selected
-                                {% endif %}
-                            >{{country.name}}</option>
-                        {% endfor %}
+                    <select name="country" id="id_country" class="form-control">
+                        <option selected="true" value="" disabled>Select a Country</option>
+                        
                     </select>
                 </div>
 
                 <div class="col-md-8 mb-3">
                     <label class="sr-only">Select a category</label>
                     <select name="category" id="category" class="form-control">
-                        <option selected="true" value="-1">Select a Category</option>
-                        {% for category in categories %}
-                            <option value="{{ category.id }}"
-                                {% if category.id == values.category|add:"0" %}
-                                    selected
-                                {% endif %}
-                            >{{category.name}}</option>
+                        <option selected="true" value="" disabled>Select a Category</option>
+                        {% for category in categoriesRaw %}
+                            <option value="{{category._id}}">{{category.name}}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <label class="sr-only">Select a County</label>
-                    <select name="county" id="county" class="form-control">
-                        <option selected="true" value="-1">Select a County</option>
-                        {% for county in filters.counties %}
-                            <option value="{{ county.id }}"
-                                    data-country-id="{{ county.country_id }}"
-                                    {% if county.id == values.county|add:"0" %}
-                                        selected
-                                    {% endif %}>
-                                    {{county.name}}
-                            </option>
-                        {% endfor %}
+                    <label class="sr-only">Select a Subcountry</label>
+                    <select name="subcountry" id="id_subcountry" class="form-control">
+                        <option selected="true" value="" disabled>Select a Subcountry</option>
+                       
                     </select>
                 </div>
                 <div class="col-md-4 mb-3">
@@ -88,18 +102,8 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="sr-only">City</label>
-                    <select name="city" id="city" class="form-control">
-                        <option selected="true" value="-1">Select a City</option>
-                        {% for city in filters.cities %}
-                            <option value="{{ city.id }}"
-                                    data-country-id="{{ city.country_id }}"
-                                    data-county-id="{{ city.county_id }}"
-                                    {% if city.id == values.city|add:"0" %}
-                                        selected
-                                    {% endif %}>
-                                    {{city.name}} | {{ city.image_count }}
-                            </option>
-                        {% endfor %}
+                    <select name="city" id="id_city" class="form-control">
+                        <option selected="true" value="" disabled>Select a City</option>
                     </select>
                 </div>
             <button class="btn btn-secondary btn-block mt-4" type="submit">Submit form</button>
@@ -115,7 +119,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'index' %}">
+                    <a href="/">
                         <i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="breadcrumb-item active"> Browse Images</li>
@@ -131,14 +135,15 @@
             <div class="col-md-3">
                 <div class="list-group list-group-root well">
                     {% for parent in categories %}
-                        <div href="#item-{{ parent.id }}" class="list-group-item" {% if parent.subcategories %}data-toggle="collapse"{% endif %} >
+                        <div href="#item-{{ parent._id }}" class="list-group-item" {% if parent.subcategories %}data-toggle="collapse"{% endif %} >
                             <i class="fas fa-chevron-right"></i>&nbsp;&nbsp;
-                            <a href="{% url 'list_images' %}?category={{ parent.id }}">{{ parent.name }} ({{ parent.image_count }})</a>
+                            <a href="/images/browse_images?category={{parent._id}}">{{ parent.name }} ({{parent.imageCount}})</a>
+                            
                         </div>
                         {% if parent.subcategories %}
-                            <div class="list-group collapse" id="item-{{ parent.id }}">
+                            <div class="list-group collapse" id="item-{{ parent._id }}">
                                 {% for child in parent.subcategories %}
-                                    <a href="{% url 'list_images' %}?category={{ child.id }}" class="list-group-item">{{ child.name }} ({{ child.image_count }})</a>
+                                    <a href="/images/browse_images?category={{child._id}}" class="list-group-item">{{ child.name }} ({{child.imageCount}})</a>
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -160,14 +165,14 @@
                                     <div class="card-text">
                                         <span class="text-secondary">Rating:</span> {{ top_in_category.avg_rating }}
                                     </div>
-                                    <a href="{% url 'image' top_in_category.id %}" class="btn btn-primary bottom-right text-light">View image</a>
+                                    <a href="" class="btn btn-primary bottom-right text-light">View image</a>
                                 </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
-                <div class="row">
+                <div class="row" id="image_list">
                 {% if images %}
                     {% include 'partials/_image_list.html' %}
                 {% else %}

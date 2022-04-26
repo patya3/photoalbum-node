@@ -1,9 +1,28 @@
 {% extends 'base.html' %}
-{% load static %}
+{% block stylesheets %}
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 {% block scripts %}
-    <script src="{% static 'js/my_images.js' %}"></script>
-    <script src="{% static 'js/el-pagination.js' %}"></script>
-    <script>$.endlessPaginate({paginateOnScroll: true});</script>
+    <script src="/js/my_images.js"></script>
+    <!-- <script src="/js/el-pagination.js"></script>
+    <script>$.endlessPaginate({paginateOnScroll: true});</script> -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="/js/searchSelect.js"></script>
+    <script>
+      function callback(data, page) {
+        return {
+          results: data.map((item) => {
+            return {
+              id: `{"id": "${item._id}", "name": "${item.name}"}`,
+              text: item.name,
+            };
+          }),
+        }
+      }
+      searchSelect('#id_city','/api/cities',callback);
+      searchSelect('#id_subcountry','/api/subcountries',callback);
+      searchSelect('#id_country','/api/countries',callback);
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -13,7 +32,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'index' %}">
+                    <a href="/">
                         <i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="breadcrumb-item active"> My Images</li>
@@ -21,7 +40,7 @@
         </nav>
     </div>
 </section>
-
+{% include 'partials/_alerts.html' %}
 <!-- Listings -->
 <section id="listings" class="py-4">
     <div class="container">
@@ -50,32 +69,47 @@
           </button>
         </div>
         <div class="modal-body">
-          <form id="modifyForm" action="{% url 'update_image' 1 %}" method="POST">
-            {% csrf_token %}
-            {{ form.id }}
+          <form id="modifyForm" action="/images/update_image/{{image._id}}" method="POST">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
             <div class="form-group">
               <label for="image" class="col-form-label">Image:</label>
               <img id="modalImage" src="" alt="">
             </div>
-            {{ form.name.errors }}
             <div class="form-group">
-              <label for="{{ form.name.id_for_label }}" class="col-form-label">Name:</label>
-              {{ form.name }}
+              <label for="id_title" class="col-form-label">Title:</label>
+              <input type="text" name="title" class="form-control" required id="id_title">
             </div>
-            {{ form.description.errors }}
             <div class="form-group">
-              <label for="{{ form.description.id_for_label }}" class="col-form-label">Description:</label>
-              {{ form.description }}
+              <label for="id_description" class="col-form-label">Description:</label>
+              <input type="text" name="description" class="form-control" required="" id="id_description">
             </div>
-            {{ form.category.errors }}
             <div class="form-group">
-              <label for="{{ form.category.id_for_label }}" class="col-form-label">Category:</label>
-              {{ form.category }}
+              <label for="id_category" class="col-form-label">Category:</label>
+              <select
+                  name="category"
+                  class="form-control"
+                  required
+                  id="id_category"
+                >
+                  {% for category in categories %}
+                    <option value='{"id": "{{category._id}}", "name": "{{category.name}}"}'>{{category.name}}</option>
+                  {% endfor %}
+                </select>
             </div>
-            {{ form.city.errors }}
             <div class="form-group">
-              <label for="{{ form.city.id_for_label }}" class="col-form-label">City:</label>
-              {{ form.city }}
+              <label for="id_country" class="col-form-label">Country:</label>
+                <select name="country" class="form-control" required id="id_country" required>
+                </select>
+            </div>
+            <div class="form-group">
+              <label for="id_subcountry" class="col-form-label">Subcountry:</label>
+                <select name="subcountry" class="form-control" required id="id_subcountry">
+                </select>
+            </div>
+            <div class="form-group">
+              <label for="id_city" class="col-form-label">City:</label>
+                <select name="city" class="form-control" required id="id_city">
+                </select>
             </div>
             <hr>
             <button type="submit" id="submitModifyForm" class="btn btn-block btn-secondary">Modify</button>

@@ -29,18 +29,18 @@
             Images
           </a>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            <a class="dropdown-item" href="">Browse images</a>
+            <a class="dropdown-item" href="/images/browse_images">Browse images</a>
             <a class="dropdown-item" href="">Faces of the Cities</a>
             <a class="dropdown-item" href="">Popular destinations</a>
           </div>
         </li>
         <li class="nav-item mr-3">
           <a class="nav-link" href="/images/upload_image"
-            >Upload Image {{request.user.username}}</a
+            >Upload Image</a
           >
         </li>
         <li class="nav-item mr-3">
-          <a class="nav-link" href="">Leaderboard</a>
+          <a class="nav-link" href="/users/leaderboard">Leaderboard</a>
         </li>
       </ul>
 
@@ -60,7 +60,7 @@
         </li>
         {% else %}
         <li class="nav-item mr-3">
-          <a href="" class="nav-link">
+          <a href="/users/my_images" class="nav-link">
             <i class="fas fa-images"></i> My Images
           </a>
         </li>

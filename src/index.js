@@ -8,6 +8,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const expressSession = require('express-session');
 const path = require('path');
 const MongoStore = require('connect-mongo');
+const { ensureAuthenticated } = require('./utils/ensureAuthenticated');
 
 const app = express();
 
@@ -19,6 +20,11 @@ const nunjuckEnv = nunjucks.configure('src/views', {
   autoescape: true,
   express: app,
   watch: process.env.NODE_ENV === 'production' ? false : true,
+});
+
+nunjuckEnv.addFilter('date', (dateInput) => {
+  const date = new Date(dateInput);
+  return date.toISOString().split('T')[0].replaceAll('-', '. ') + '.';
 });
 
 app.set('engine', nunjuckEnv);
@@ -41,6 +47,7 @@ require('./models/subcountry.model');
 require('./models/city.model');
 require('./models/image.model');
 require('./models/category.model');
+require('./models/rating.model');
 
 const userModel = mongoose.model('user');
 
@@ -81,6 +88,9 @@ app.use(
     resave: false,
     saveUninitialized: true,
     store: MongoStore.create({ mongoUrl: connectionUri }),
+    cookie: {
+      maxAge: 5 * 24 * 60 * 60 * 1000,
+    },
   })
 );
 app.use(passport.initialize());
@@ -89,7 +99,13 @@ app.use(passport.session());
 app.use(require('./utils/inject-globals'));
 app.use('/auth', require('./routes/auth.routes'));
 app.use('/images', require('./routes/image.routes'));
+app.use('/users', ensureAuthenticated, require('./routes/user.routes'));
 app.use('/admin', require('./routes/admin.routes'));
+app.use('/api', require('./routes/api.routes'));
+
+app.get('/', (req, res) => {
+  return res.redirect('/images');
+});
 
 app.use((req, res, next) => {
   res.status(404).send('Not found');

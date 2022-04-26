@@ -5,11 +5,14 @@ const csrf = require('csurf');
 const csrfProtection = csrf({ cookie: true });
 const { errorMsg, successMsg } = require('../utils/messages');
 const { ensureAuthenticated } = require('../utils/ensureAuthenticated');
+const Multer = require('multer');
+const { createPhotoUrl, putObject, deleteObject } = require('../utils/minio');
 
 const templates = {
   upload: 'imagesapp/upload_image.html',
   home: 'pages/index.html',
   image: 'imagesapp/image.html',
+  browseImages: 'imagesapp/browse_images.html',
 };
 
 const models = {
@@ -18,6 +21,7 @@ const models = {
   country: mongoose.model('country'),
   subcountry: mongoose.model('subcountry'),
   category: mongoose.model('category'),
+  rating: mongoose.model('rating'),
 };
 
 const router = express.Router();
@@ -27,14 +31,211 @@ router.get('/', async (req, res) => {
   const images = await models.image
     .find()
     .select(['title', 'photoUrl', '_id', 'description']);
-  return res.render(templates.home, { images });
+
+  const daily = await models.image.count({
+    createdAt: {
+      $gte: new Date().setHours(0, 0, 0, 0),
+      $lt: new Date().setHours(23, 59, 59, 999),
+    },
+  });
+
+  const monthly = await models.image.count({
+    $expr: {
+      $eq: [{ $month: '$createdAt' }, new Date().getMonth() + 1],
+    },
+  });
+
+  const yearly = await models.image.count({
+    $expr: {
+      $eq: [{ $year: '$createdAt' }, new Date().getFullYear()],
+    },
+  });
+
+  const allTime = await models.image.count();
+
+  const mostLovedCity = (
+    await models.image.aggregate([
+      { $sortByCount: '$location.city.id' },
+      { $limit: 1 },
+    ])
+  )[0];
+
+  const firstCityName = (
+    await models.city.findById(mostLovedCity._id).select(['name'])
+  ).name;
+
+  return res.render(templates.home, {
+    images,
+    statistics: {
+      daily,
+      monthly,
+      yearly,
+      allTime,
+      firstCity: {
+        name: firstCityName,
+        ...mostLovedCity,
+      },
+    },
+  });
 });
 
-router.get('/image/:id', async (req, res) => {
+router.get('/browse_images', async (req, res) => {
+  const q = req.query;
+
+  const categoriesRaw = await models.category
+    .find()
+    .sort({ parentId: 1, _id: 1 });
+
+  const categoryFilter = categoriesRaw
+    .filter((c) => c.parentId == q.category || c._id == q.category)
+    .map((c) => c._id);
+
+  /* TODO annotate with rating */
+  const images = await models.image
+    .find({
+      ...(q.country && { 'location.country.id': q.country }),
+      ...(q.subcountry && { 'location.subcountry.id': q.subcountry }),
+      ...(q.city && { 'location.city.id': q.city }),
+      ...(q.keywords && { title: { $regex: new RegExp(q.keywords, 'i') } }),
+      ...(q.category && { 'category.id': { $in: categoryFilter } }),
+    })
+    .select(['_id', 'title', 'photoUrl']);
+
+  const imageCountsByCategory = await models.image.aggregate([
+    {
+      $group: {
+        _id: '$category.id',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const categories = [];
+
+  for (const category of categoriesRaw) {
+    let cat = { ...category._doc };
+    const imageCount = imageCountsByCategory.find(
+      (item) => item._id == cat._id
+    );
+    cat.imageCount = imageCount ? imageCount.count : 0;
+    if (!cat.parentId) {
+      categories.push({ ...cat, subcategories: [] });
+    } else {
+      const index = categories.findIndex((c) => c._id == cat.parentId);
+      categories[index].subcategories.push(cat);
+      categories[index].imageCount += cat.imageCount;
+    }
+  }
+  return res.render(templates.browseImages, {
+    images,
+    categories,
+    categoriesRaw,
+  });
+});
+
+router.get('/image/:id', csrfProtection, async (req, res) => {
   const id = req.params.id;
   const image = await models.image.findById(id);
-  return res.render(templates.image, { image });
+
+  const ratings = await models.rating
+    .find({ imageId: id })
+    .sort({ createdAt: -1 });
+
+  let message = {};
+
+  if (req.query.success !== undefined) {
+    if (req.query.success === 'true') {
+      message = successMsg('Successfully commented.');
+    } else {
+      message = errorMsg(req.query.message);
+    }
+  }
+
+  return res.render(templates.image, {
+    csrfToken: req.csrfToken(),
+    image,
+    ratings,
+    ...message,
+  });
 });
+
+router.post(
+  '/rate_image/:id',
+  ensureAuthenticated,
+  csrfProtection,
+  async (req, res) => {
+    const imageId = req.params.id;
+    const user = {
+      id: req.user._id,
+      username: req.user.username,
+    };
+
+    req.message = 'asd';
+
+    const { comment, stars } = req.body;
+
+    if (comment && stars && user && imageId) {
+      const newRating = new models.rating({
+        stars,
+        comment,
+        user,
+        imageId,
+      });
+
+      newRating.save((error) => {
+        if (error) {
+          return res.redirect(
+            `/images/image/${imageId}?success=false&message=${error._message}`
+          );
+        }
+        return res.redirect(`/images/image/${imageId}?success=true`);
+      });
+    } else {
+      return res.redirect(
+        `/images/image/${imageId}?success=false&message=${'All fields required.'}`
+      );
+    }
+  }
+);
+
+router.post(
+  '/reply/:commentId',
+  ensureAuthenticated,
+  csrfProtection,
+  async (req, res) => {
+    const commentId = req.params.commentId;
+    const user = {
+      id: req.user._id,
+      username: req.user.username,
+    };
+
+    if (req.body.comment && user) {
+      models.rating.findByIdAndUpdate(
+        commentId,
+        {
+          $push: {
+            replies: {
+              user,
+              comment: req.body.comment,
+            },
+          },
+        },
+        (error, doc) => {
+          if (error) {
+            return res.redirect(
+              `/images/image/${imageId}?success=false&message=${error._message}`
+            );
+          }
+          return res.redirect(`/images/image/${doc.imageId}?success=true`);
+        }
+      );
+    } else {
+      return res.redirect(
+        `/images/image/${imageId}?success=false&message=${'All fields required.'}`
+      );
+    }
+  }
+);
 
 /* Upload Image */
 router.get(
@@ -42,13 +243,9 @@ router.get(
   ensureAuthenticated,
   csrfProtection,
   async (req, res) => {
-    const cities = await models.city
-      .find()
-      .select(['name', '_id', 'subcountryId', 'countryId']);
     const categories = await models.category.find();
     return res.render(templates.upload, {
       csrfToken: req.csrfToken(),
-      cities,
       categories,
     });
   }
@@ -56,6 +253,7 @@ router.get(
 
 router.post(
   '/upload_image',
+  Multer({ storage: Multer.memoryStorage() }).single('photo'),
   ensureAuthenticated,
   csrfProtection,
   async (req, res) => {
@@ -73,6 +271,11 @@ router.post(
         .map((e) => {
           return { id: e._id, name: e.name };
         });
+
+      const { photoUrl, filename } = await putObject(
+        req.file.originalname,
+        req.file.buffer
+      );
 
       const newImage = new models.image({
         title,
@@ -94,11 +297,12 @@ router.post(
           id: req.user._id,
           username: req.user.username,
         },
-        photoUrl: '/img/building.jpg',
+        photoUrl,
       });
 
-      newImage.save((error) => {
+      newImage.save(async (error) => {
         if (error) {
+          deleteObject(filename);
           return res.render(templates.upload, errorMsg(error._message));
         }
         return res.render(
@@ -108,6 +312,46 @@ router.post(
       });
     } else {
       return res.render(templates.upload, errorMsg('All fields required.'));
+    }
+  }
+);
+
+router.post(
+  '/update_image/:id',
+  ensureAuthenticated,
+  csrfProtection,
+  async (req, res) => {
+    const id = req.params.id;
+
+    let { title, description, category, country, subcountry, city } = req.body;
+
+    category = JSON.parse(category);
+    subcountry = JSON.parse(subcountry);
+    country = JSON.parse(country);
+    city = JSON.parse(city);
+
+    if (title && description && country && subcountry && city && category) {
+      models.image.findByIdAndUpdate(
+        id,
+        {
+          title,
+          description,
+          category,
+          location: { city, country, subcountry },
+        },
+        (error, doc) => {
+          if (error) {
+            return res.redirect(
+              `/users/my_images?success=false&message=${error._message}`
+            );
+          }
+          return res.redirect(`/users/my_images?success=true`);
+        }
+      );
+    } else {
+      return res.redirect(
+        `/users/my_images?success=false&message=${'All fields required.'}`
+      );
     }
   }
 );

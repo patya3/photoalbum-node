@@ -1,28 +1,28 @@
-{% load el_pagination_tags %}
-{% lazy_paginate images %}
 {% for image in images %}
     <div class="col-md-6 col-lg-4 mb-4">
         <div class="card listing-preview">
-            <img class="card-img-top" src="{{ image.photo.url }}" alt="">
+            <img class="card-img-top" src="{{ image.photoUrl }}" alt="">
             <div class="card-body">
                 <div class="listing-heading text-center">
-                    <h4 class="text-primary">{{ image.name }}</h4>
+                    <h4 class="text-primary">{{ image.title }}</h4>
                     <p>
                         <i class="fas fa-map-marker text-secondary"></i>{{ image.description }}</p>
                 </div>
                 <hr>
                 <div class="row d-flex">
-                    <a href="{% url 'image' image.id %}" class="btn btn-primary mx-auto">View</a>
-                    <a href="{% url 'image' image.id %}" class="modifyButton btn btn-success w-50 mx-auto" data-toggle="modal" data-target="#modifyModal"
-                        data-id="{{ image.id }}"
-                        data-img="{{ image.photo.url }}"
-                        data-name="{{ image.name }}"
+                    <a href="/images/image/{{image._id}}" class="btn btn-primary mx-auto">View</a>
+                    <a href="/images/image/{{image._id}}" class="modifyButton btn btn-success w-50 mx-auto" data-toggle="modal" data-target="#modifyModal"
+                        data-id="{{ image._id }}"
+                        data-img="{{ image.photoUrl }}"
+                        data-title="{{ image.title }}"
                         data-description="{{ image.description }}"
-                        data-category-id="{{ image.category_id }}"
-                        data-city-id="{{ image.city_id }}"
+                        data-category-id='{"id": "{{image.category.id}}", "name": "{{image.category.name}}"}'
+                        data-country-id='{"id": "{{image.location.country.id}}", "name": "{{image.location.country.name}}"}'
+                        data-subcountry-id='{"id": "{{image.location.subcountry.id}}", "name": "{{image.location.subcountry.name}}"}'
+                        data-city-id='{"id": "{{image.location.city.id}}", "name": "{{image.location.city.name}}"}'
                     >Modify</a>
                     <a class="deleteButton btn btn-primary btn-danger mx-auto" data-toggle="modal" data-target="#confirmDeleteModal"
-                        data-id="{{ image.id }}"
+                        data-id="{{ image._id }}"
                     >Delete</a>
                 </div>
                 
@@ -30,4 +30,3 @@
         </div>
     </div>
 {% endfor %}
-{% show_more %}

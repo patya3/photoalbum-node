@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -r dotenv/config src/index.js",
     "start": "node -r dotenv/config src/index.js",
-    "import": "node -r dotenv/config import.js"
+    "import": "node -r dotenv/config import.js",
+    "minio": "./minio.exe server ./minio-data --console-address ':9001'"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +26,9 @@
     "csurf": "^1.11.0",
     "express": "^4.17.3",
     "express-session": "^1.17.2",
+    "minio": "^7.0.27",
     "mongoose": "^6.2.8",
+    "multer": "^1.4.4",
     "nunjucks": "^3.2.3",
     "passport": "^0.5.2",
     "passport-local": "^1.0.0"

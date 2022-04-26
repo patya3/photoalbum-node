@@ -44,7 +44,22 @@
   <div class="container">
     <h3 class="text-center mb-3">Upload Statistics</h3>
     <div class="row">
-      placeholder
+      {% if statistics %}
+          <ul class="list-group m-auto">
+            <li class="list-group-item">Daily uploads: <span class="text-danger">{{ statistics.daily }} photos</span></li>
+            <li class="list-group-item">Monthly uploads: <span class="text-danger">{{ statistics.monthly }} photos</span></li>
+            <li class="list-group-item">Yearly uploads: <span class="text-danger">{{ statistics.yearly }} photos</span></li>
+            <li class="list-group-item">All time uploads: <span class="text-danger">{{ statistics.allTime }} photos</span></li>
+            <li class="list-group-item">
+              Most images was uploaded about
+              <a href="/images?city={{statistics.firstCity._id}}">
+                <span class="text-danger">{{ statistics.firstCity.name }} 
+                  <span class="text-secondary">({{ statistics.firstCity.count }} photos)</span>
+                </span>
+              </a>
+            </li>
+          </ul>
+      {% endif %}
     </div>
   </div>
 </section>
