@@ -60,9 +60,12 @@ router.get('/', async (req, res) => {
     ])
   )[0];
 
-  const firstCityName = (
-    await models.city.findById(mostLovedCity._id).select(['name'])
-  ).name;
+  let firstCityName = '';
+  if (mostLovedCity) {
+    firstCityName = (
+      await models.city.findById(mostLovedCity._id).select(['name'])
+    ).name;
+  }
 
   return res.render(templates.home, {
     images,
@@ -284,10 +287,7 @@ router.post(
         title,
         description,
         photoUrl,
-        category: {
-          id: '1',
-          name: 'Nature',
-        },
+        category: JSON.parse(category),
         location: {
           country: countryAndSubcountry[0],
           subcountry: countryAndSubcountry[1],
