@@ -105,3 +105,4 @@ dist
 
 minio.exe
 /minio-data
+/minio-data_
