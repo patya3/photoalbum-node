@@ -1,5 +1,6 @@
-function searchSelect(selector, url, callback) {
+function searchSelect(selector, url, callback, placeholder) {
   $(selector).select2({
+    ...(placeholder && { placeholder }),
     minimumInputLength: 3,
     ajax: {
       url: url,

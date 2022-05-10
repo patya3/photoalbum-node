@@ -69,15 +69,8 @@ router.get(
   ensureNotAuthenticated,
   csrfProtection,
   async (req, res) => {
-    const countries = await models.country.find();
-    const subcountries = await models.subcountry.find();
-    const cities = await models.city.find();
-
     return res.render(templates.register, {
       csrfToken: req.csrfToken(),
-      countries,
-      subcountries,
-      cities,
     });
   }
 );

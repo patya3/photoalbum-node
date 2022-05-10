@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-{% load bootstrap_pagination %}
 
 {% block content %}
 <section id="showcase-inner" class="py-5 text-white">
@@ -20,7 +19,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'index' %}">
+                    <a href="/images">
                         <i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="breadcrumb-item active"> Most Popular Destinations</li>
@@ -31,29 +30,22 @@
 
 <div class="container">
     <div class="row">
-        {% if popular_cities %}
-            {% for city in popular_cities %}
+        {% if popularDestinations %}
+            {% for city in popularDestinations %}
                 <div class="col-md-12 col-lg-12 mb-4 gallery">
                     <div class="card mb-3" >
                         <div class="row no-gutters">
                             <div class="col-md-4">
-                            <img src="{{ city.main_image.url }}" class="card-img" alt="{{ city.city__name }}">
+                            <img src="{{ city.photoUrl }}" class="card-img" alt="{{ city.name }}">
                             </div>
                             <div class="col-md-8">
                             <div class="card-body">
-                                <h2 class="card-title">{{ city.city__name }}</h5>
+                                <h2 class="card-title">{{ city.name }}</h5>
                                 <h6 class="card-title mt-2">Description:</h3>
-                                <p class="card-text">
-                                    {% if city.char_desc %}
-                                        {{ city.char_desc }}
-                                    {% else %}
-                                        No Description avaliable
-                                    {% endif %}
-                                </p>
                                 <div class="card-text">
-                                    <span class="text-secondary">Images taken from that city by tourists:</span> {{ city.count_image }}
+                                    <span class="text-secondary">Images taken from that city by tourists:</span> {{ city.count }}
                                 </div>
-                                <a href="{% url 'list_images' %}?city={{ city.city_id }}"class="btn btn-primary bottom-right text-light">View all images</a>
+                                <a href="/images/browse_images?city={{ city._id }}"class="btn btn-primary bottom-right text-light">View all images</a>
                             </div>
                             </div>
                         </div>

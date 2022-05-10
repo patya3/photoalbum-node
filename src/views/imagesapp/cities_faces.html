@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
-{% load static %}
 {% block scripts %}
-    <script src="{% static 'js/lc_lightbox.lite.min.js' %}"></script>
+    <script src="/js/lc_lightbox.lite.min.js"></script>
     <script>
         lc_lightbox('.elem', {
             wrap_class: 'lcl_fade_oc',
@@ -11,9 +10,25 @@
             // more options here
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="/js/searchSelect.js"></script>
+    <script>
+        function callback(data, page) {
+            return {
+                results: data.map((city) => {
+                return {
+                    id: city._id,
+                    text: city.name,
+                };
+                }),
+            }
+        }
+      searchSelect('#id_city','/api/cities', callback, "Select a city");
+    </script>
 {% endblock scripts %}
 {% block stylesheets %}
-    <link rel="stylesheet" href="{% static 'css/lc_lightbox.min.css' %}">
+    <link rel="stylesheet" href="/css/lc_lightbox.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock stylesheets %}
 
 {% block content %}
@@ -34,7 +49,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'index' %}">
+                    <a href="/images">
                         <i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="breadcrumb-item active"> Faces of the cities</li>
@@ -44,39 +59,33 @@
 </section>
 <section id="listings" class="py-4">
     <div class="container">
-    <form id="searchUserForm" method="GET" action="{% url 'cities_faces' %}">
+    <form id="selectCityForm" method="GET" action="/images/faces_of_cities">
         <div class="input-group flex-nowrap mb-3">
-            <select name="city" id="city" class="form-control">
-                <option selected="true" value="-1">Select a City</option>
-                {% for city in cities %}
-                    <option value="{{ city.id }}"
-                            {% if city.id == values.city|add:"0" %}
-                                selected
-                            {% endif %}>
-                            {{city.name}}
-                    </option>
-                {% endfor %}
+            <select name="city" class="form-control" required id="id_city" placeholder="Select a city">
+                
             </select>
             <div class="input-group-prepend">
-                <button class="input-group-text" id="searchUserFormSubmit">Search</button>
+                <button class="input-group-text" id="selectCityForm">Search</button>
+                <a class="input-group-text" href="/images/faces_of_cities">Reset</a>
             </div>
         </div>
     </form>
         <div class="row">
-            {% if cities_images %}
-                {% for data in cities_images %}
-                    <div class="col-md-12 text-center m-4"><h3 class="m-auto">{{data.city_name}}</h3></div>
+            {% if facesOfCities %}
+                {% for id, images in facesOfCities %}
+                
+                    <div class="col-md-12 text-center m-4"><h3 class="m-auto">{{images[0].location.city.name}}</h3></div>
                         
-                    {% for image in data.citys_images %}
-                        <div class="col-md-6 col-lg-6 mb-4">
+                    {% for image in images %}
+                        <div class="col-md-3 col-lg-3 mb-4">
                         <a class="elem" 
-                            href="{{ image.photo.url }}" 
-                            title="<span>{{ data.city_name }}</span> | {{ image.name }}"
+                            href="{{ image.photoUrl }}" 
+                            title="<span>{{ image.location.city.name }}</span> | {{ image.title }}"
                             data-lcl-txt="{{ image.description }}" 
                             data-lcl-author="{{ image.user.username }}" 
-                            data-lcl-thumb="{{ image.photo.url }}">
-                            <span style="background-image: url({{ image.photo.url }});"></span>
-                            <img class="img-fluid" src="{{ image.photo.url }}" alt="{{ image.name }}">
+                            data-lcl-thumb="{{ image.photoUrl }}">
+                            <span style="background-image: url({{ image.photoUrl }});"></span>
+                            <img class="img-fluid" src="{{ image.photoUrl }}" alt="{{ image.title }}">
                             </a>
                         </div>
                     {% endfor %}

@@ -7,12 +7,16 @@ const { errorMsg, successMsg } = require('../utils/messages');
 const { ensureAuthenticated } = require('../utils/ensureAuthenticated');
 const Multer = require('multer');
 const { createPhotoUrl, putObject, deleteObject } = require('../utils/minio');
+const { ObjectId } = require('mongodb');
 
 const templates = {
   upload: 'imagesapp/upload_image.html',
   home: 'pages/index.html',
   image: 'imagesapp/image.html',
   browseImages: 'imagesapp/browse_images.html',
+  my_images: 'user/my_images.html',
+  faces_of_cities: 'imagesapp/cities_faces.html',
+  popular_destinations: 'imagesapp/popular_destinations.html',
 };
 
 const models = {
@@ -30,7 +34,9 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   const images = await models.image
     .find()
-    .select(['title', 'photoUrl', '_id', 'description']);
+    .select(['title', 'photoUrl', '_id', 'description'])
+    .sort({ createdAt: -1 })
+    .limit(6);
 
   const daily = await models.image.count({
     createdAt: {
@@ -84,6 +90,11 @@ router.get('/', async (req, res) => {
 
 router.get('/browse_images', async (req, res) => {
   const q = req.query;
+  let page = 1;
+  if (q.page) {
+    page = q.page;
+  }
+  const limit = 10;
 
   const categoriesRaw = await models.category
     .find()
@@ -93,18 +104,27 @@ router.get('/browse_images', async (req, res) => {
     .filter((c) => c.parentId == q.category || c._id == q.category)
     .map((c) => c._id);
 
+  const dbQuery = {
+    ...(q.date_from && { createdAt: { $gte: new Date(q.date_from) } }),
+    ...(q.date_to && { createdAt: { $lt: new Date(q.date_to) } }),
+    ...(q.country && { 'location.country.id': q.country }),
+    ...(q.subcountry && { 'location.subcountry.id': q.subcountry }),
+    ...(q.city && { 'location.city.id': q.city }),
+    ...(q.keywords && { title: { $regex: new RegExp(q.keywords, 'i') } }),
+    ...(q.category &&
+      q.category != '0' && { 'category.id': { $in: categoryFilter } }),
+  };
+
   /* TODO annotate with rating */
   const images = await models.image
-    .find({
-      ...(q.date_from && { createdAt: { $gte: new Date(q.date_from) } }),
-      ...(q.date_to && { createdAt: { $lt: new Date(q.date_to) } }),
-      ...(q.country && { 'location.country.id': q.country }),
-      ...(q.subcountry && { 'location.subcountry.id': q.subcountry }),
-      ...(q.city && { 'location.city.id': q.city }),
-      ...(q.keywords && { title: { $regex: new RegExp(q.keywords, 'i') } }),
-      ...(q.category && { 'category.id': { $in: categoryFilter } }),
-    })
-    .select(['_id', 'title', 'photoUrl', 'location.city']);
+    .find(dbQuery)
+    .select(['_id', 'title', 'photoUrl', 'location.city'])
+    .sort({ createdAt: -1 })
+    .skip(limit * (page - 1))
+    .limit(limit);
+
+  const numberOfImages = await models.image.countDocuments(dbQuery);
+  const maxPage = Math.ceil(numberOfImages / limit);
 
   const imageCountsByCategory = await models.image.aggregate([
     {
@@ -136,7 +156,64 @@ router.get('/browse_images', async (req, res) => {
     categories,
     categoriesRaw,
     values: q,
+    maxPage,
+    numberOfImages,
   });
+});
+
+router.get('/faces_of_cities', async (req, res) => {
+  const selectedCityId = req.query.city;
+  const imageIdsAndAvgRatings = await models.rating.aggregate([
+    {
+      $group: {
+        _id: '$imageId',
+        avgRating: { $avg: '$stars' },
+      },
+    },
+    { $sort: { avgRating: -1 } },
+  ]);
+
+  let images;
+  if (selectedCityId) {
+    images = await models.image
+      .find({ 'location.city.id': selectedCityId })
+      .limit(10);
+  } else {
+    images = await models.image.find({
+      _id: { $in: imageIdsAndAvgRatings.map((item) => item._id) },
+    });
+  }
+
+  const facesOfCities = {};
+
+  for (const image of images) {
+    const key = image.location.city.id;
+    if (!facesOfCities[key]) {
+      facesOfCities[key] = [image];
+    } else {
+      facesOfCities[key].push(image);
+    }
+  }
+
+  return res.render(templates.faces_of_cities, { facesOfCities });
+});
+
+router.get('/popular_destinations', async (req, res) => {
+  const popularDestinations = await models.image
+    .aggregate([
+      {
+        $group: {
+          _id: '$location.city.id',
+          count: { $sum: 1 },
+          photoUrl: { $last: '$photoUrl' },
+          name: { $last: '$location.city.name' },
+        },
+      },
+      { $sort: { count: -1 } },
+    ])
+    .limit(10);
+
+  return res.render(templates.popular_destinations, { popularDestinations });
 });
 
 router.get('/image/:id', csrfProtection, async (req, res) => {
@@ -163,6 +240,25 @@ router.get('/image/:id', csrfProtection, async (req, res) => {
     ratings,
     ...message,
   });
+});
+
+router.delete('/image/:id', ensureAuthenticated, async (req, res) => {
+  const id = req.params.id;
+  const image = await models.image.findById(id);
+  if (req.user._id != image.user.id) {
+    return res.render(
+      templates.my_images,
+      errorMsg('Cant delete others images.')
+    );
+  }
+
+  const response = await models.image.deleteOne({ _id: ObjectId(id) });
+  if (!response.deletedCount) {
+    return res.render(templates.my_images, errorMsg('Something went wrong.'));
+  }
+  await models.rating.deleteMany({ imageId: id });
+  await deleteObject(image.photoUrl.split('/').slice().pop());
+  return res.render(templates.my_images, successMsg('Successfully deleted.'));
 });
 
 router.post(
@@ -306,6 +402,7 @@ router.post(
       newImage.save(async (error) => {
         if (error) {
           deleteObject(filename);
+
           return res.render(templates.upload, errorMsg(error._message));
         }
         return res.render(

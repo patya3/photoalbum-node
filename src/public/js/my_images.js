@@ -41,8 +41,8 @@ $('.deleteButton').on('click', function () {
   let $this = $(this);
   $('#confirmDelete').click(function () {
     $.ajax({
-      url: '/images/delete_image/' + $this.data('id'),
-      type: 'GET',
+      url: '/images/image/' + $this.data('id'),
+      type: 'DELETE',
       success: function () {
         $('#confirmDeleteModal').modal('toggle');
         $('#successDeleteModal').modal('show');

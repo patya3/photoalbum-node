@@ -1,7 +1,26 @@
 {% extends 'base.html' %}
-
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 {% block scripts %}
-  <script src="/js/register.js'"></script>
+    <script src="/js/register.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="/js/searchSelect.js"></script>
+    <script>
+        function callback(data, page) {
+            return {
+                results: data.map((item) => {
+                return {
+                    id: item.name,
+                    text: item.name,
+                };
+                }),
+            }
+        }
+      searchSelect('#country','/api/countries', callback, 'Select a country');
+      searchSelect('#subcountry','/api/subcountries', callback, 'Select a subcountry');
+      searchSelect('#city','/api/cities', callback, 'Select a city');
+    </script>
 {% endblock %}
 {% block title %} | Register {% endblock %}
 
@@ -46,27 +65,21 @@
                 </div>
                 <div class="form-group">
                   <label for="country">Country</label>
-                  <select name="country" id="country" class="form-control">
-                    {% for country in countries %}
-                      <option value="{{ country.name }}" {% if country.id == 20 %}selected{% endif %}>{{country.name}}</option>
-                    {% endfor %}
+                  <select name="country" id="country" class="form-control" required>
+                    
                   </select>
                 </div>
                 <div class="form-group">
                   <label for="subcountry">County</label>
-                  <select name="subcountry" id="county" class="form-control">
-                    {% for subcountry in subcountries %}
-                      <option value="{{ subcountry.name }}" data-country-id="{{ subcountry.countryId }}">{{subcountry.name}}</option>
-                    {% endfor %}
+                  <select name="subcountry" id="subcountry" class="form-control" required>
+                    
                   </select>
                 </div>
                 <div class="form-group">
                   <label for="city">City</label>
-                  <select name="city" id="city" class="form-control">
-                    <option selected>City</option>
-                    {% for city in cities %}
-                      <option value="{{ city.name }}" data-country-id="{{ city.countryId }}" data-subcountry-id="{{ city.subcountryId }}">{{city.name}}</option>
-                    {% endfor %}
+                  <select name="city" id="city" class="form-control" required>
+                    
+                    
                   </select>
                 </div>
                 <input type="submit" value="Register" class="btn btn-secondary btn-block">

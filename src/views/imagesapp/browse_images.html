@@ -23,26 +23,6 @@
       searchSelect('#id_subcountry','/api/subcountries', callback);
       searchSelect('#id_country','/api/countries', callback);
     </script>
-    <script>
-        $(window).scroll(function () {
-            // End of the document reached?
-            if ($(document).height() - $(this).height() == $(this).scrollTop()) {
-                $.ajax({
-                    type: "GET",
-                    url: "/api/cities",
-                    contentType: "application/json; charset=utf-8",
-                    data: '',
-                    dataType: "json",
-                    success: function (data) {
-                        console.log('Test')
-                    },
-                    error: function (req, status, error) {
-                        console.error("Error try again");
-                    }
-                });
-            }
-        }); 
-    </script>
 {% endblock %}
 
 {% block content %}
@@ -78,6 +58,7 @@
                 <div class="col-md-8 mb-3">
                     <label class="sr-only">Select a category</label>
                     <select name="category" id="category" class="form-control">
+                        <option value="0">All category</option>
                         {% for category in categoriesRaw %}
                             <option value="{{ category._id }}"
                                 {% if category.id == values.category %}
@@ -128,6 +109,12 @@
                 <li class="breadcrumb-item active"> Browse Images</li>
             </ol>
         </nav>
+    </div>
+</section>
+
+<section>
+    <div class="container text-right">
+        <h5 class="text-primary text-lg">Images founded: {{numberOfImages}}</span>
     </div>
 </section>
 
@@ -184,6 +171,7 @@
                     </div>
                 {% endif %}
                 </div>
+                {% include 'partials/_pagination.html' %}
             </div>
         </div>
     </div>

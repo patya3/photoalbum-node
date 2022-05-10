@@ -1,0 +1,13 @@
+<nav aria-label="Page navigation example">
+  <ul class="pagination">
+    <li class="page-item {% if not request.query.page or request.query.page == 1 %} disabled {% endif %}"><a class="page-link" href="{% if request.query.page %} ?page={{request.query.page-1}} {% else %} # {% endif %} ">Previous Page</a></li>
+    <!-- <li class="page-item"><a class="page-link" href="?page={{(request.query.page|int)-1}}">{{(request.query.page|int)-1}}</a></li>
+    <li class="page-item active">
+      <a class="page-link" href="?page={{(request.query.page|int)}}">{{request.query.page}}<span class="sr-only">(current)</span></a>
+    </li>
+    <li class="page-item"><a class="page-link" href="?page={{(request.query.page|int)+1}}">{{(request.query.page|int)+1}}</a></li> -->
+    <li class="page-item disabled"><a class="page-link" href="#">{{request.query.page if request.query.page else 1 }}/{{maxPage}}</a></li>
+    <li class="page-item {% if maxPage == request.query.page or maxPage == 1 %} disabled {% endif %}"><a class="page-link" href="{% if request.query.page %} ?page={{(request.query.page | int)+1}} {% else %} ?page=2 {% endif %}">Next Page</a></li>
+  </ul>
+  
+</nav>

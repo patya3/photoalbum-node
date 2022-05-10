@@ -23,16 +23,35 @@ const models = {
 const router = express.Router();
 
 router.get('/leaderboard', async (req, res) => {
-  let users = await models.image.aggregate([
-    {
-      $group: {
-        _id: '$user.id',
-        user: { $first: '$user' },
-        count: { $sum: 1 },
+  const limit = 10;
+
+  let users = await models.image
+    .aggregate([
+      {
+        $group: {
+          _id: '$user.id',
+          user: { $first: '$user' },
+          count: { $sum: 1 },
+        },
       },
-    },
-    { $sort: { count: -1 } },
-  ]);
+      { $sort: { count: -1 } },
+    ])
+    .limit(limit);
+
+  const numberOfUsers = (
+    await models.image.aggregate([
+      {
+        $group: {
+          _id: '$user.id',
+          user: { $first: '$user' },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $count: 'totalCount' },
+    ])
+  )[0].totalCount;
+  const maxPage = Math.ceil(numberOfUsers / limit);
 
   // search
   if (req.query.username) {
@@ -41,7 +60,7 @@ router.get('/leaderboard', async (req, res) => {
     );
   }
 
-  return res.render(templates.leaderboard, { users });
+  return res.render(templates.leaderboard, { users, maxPage });
 });
 
 router.get('/profile/:id', async (req, res) => {
@@ -67,8 +86,23 @@ router.get(
   ensureAuthenticated,
   csrfProtection,
   async (req, res) => {
-    const images = await models.image.find({ 'user.id': req.user._id });
+    let page = 1;
+    if (req.query.page) {
+      page = req.query.page;
+    }
+    const limit = 10;
+
+    const images = await models.image
+      .find({ 'user.id': req.user._id })
+      .sort({ createdAt: -1 })
+      .skip(limit * (page - 1))
+      .limit(limit);
+    const numberOfImages = await models.image.countDocuments({
+      'user.id': req.user._id,
+    });
     const categories = await models.category.find();
+
+    const maxPage = Math.ceil(numberOfImages / limit);
 
     let message = {};
 
@@ -84,6 +118,7 @@ router.get(
       csrfToken: req.csrfToken(),
       images,
       categories,
+      maxPage,
       ...message,
     });
   }
