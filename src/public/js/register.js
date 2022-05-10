@@ -1,34 +1,14 @@
-var countryID = $('#country').val();
-var countyID = $('#county').val();
-var cityID = $('#city').val();
+var country = $('#country');
+var subcountry = $('#subcountry');
+var city = $('#city');
 
-$('#country').change( () => {
-    countryID = $('#country').val();
-    if (countryID != 20) {
-        $('#county').attr('disabled', true);
-    } else {
-        $('#county').attr('disabled', false);
-    }
-    $('#city>option').each( function() {
-        if ($(this).data('country-id') != countryID) {
-            $(this).css("display","none");
-            $(this).attr("disabled", true);
-        } else {
-            $(this).css("display","block");
-            $(this).attr("disabled", false);
-        }
-    });
+country.change(() => {
+  subcountry.prop('disabled', false);
 });
 
-$('#county').change(() => {
-    countyID = $('#county').val();
-    $('#city>option').each(function() {
-        if ($(this).data('county-id') != countyID) {
-            $(this).css("display","none");
-            $(this).attr("disabled", true);
-        } else {
-            $(this).css("display","block");
-            $(this).attr("disabled", false);
-        }
-    });
+subcountry.change(() => {
+  city.prop('disabled', false);
 });
+
+city.prop('disabled', true);
+subcountry.prop('disabled', true);
