@@ -82,6 +82,8 @@ passport.deserializeUser((user, done) => {
   return done(null, user);
 });
 
+console.log("tes");
+
 app.use(
   expressSession({
     secret,
